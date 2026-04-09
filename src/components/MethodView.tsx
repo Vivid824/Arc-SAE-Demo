@@ -11,7 +11,7 @@ const stageStatusLabels = {
 } as const
 
 export function MethodView({ method, geneAssociationMode }: MethodViewProps) {
-  const [experimentalContext, ...additionalCaveats] = method.honestyCaveats
+  const experimentalContext = method.honestyCaveats[0] ?? ''
   const showGlossary = Array.isArray(method.metricGlossary) && method.metricGlossary.length > 0
   const showFellowshipScope =
     Array.isArray(method.fellowshipScope) && method.fellowshipScope.length > 0
@@ -52,89 +52,79 @@ export function MethodView({ method, geneAssociationMode }: MethodViewProps) {
       <div className="view-intro method-intro">
         <h1 className="view-title">Method</h1>
         <p className="view-copy method-subtitle">
-          Technical report for how this build was generated and what we can currently interpret biologically. Gene names in the perturbation strip (NCBP2, MED10, etc.) are human genes targeted by CRISPRi knockdown. See the Glossary section below for all terms.
+          {method.intro ??
+            'Technical report for how this build was generated and what we can currently interpret biologically. Gene names in the perturbation strip (NCBP2, MED10, etc.) are human genes targeted by CRISPRi knockdown. See the Glossary section below for all terms.'}
         </p>
       </div>
 
-      <article className="method-card experimental-context">
-        <span className="experimental-context-label">Experimental context</span>
+      <article className="experimental-context">
+        <span className="experimental-context-label">
+          {method.experimentalContextLabel ?? 'Experimental context'}
+        </span>
         <p className="section-copy">{experimentalContext}</p>
         {modeSpecificNote ? <p className="section-copy method-inline-note">{modeSpecificNote}</p> : null}
       </article>
 
       <section className="method-section method-stages">
         {method.stages.map((stage, index) => (
-          <div key={stage.id} className="method-stage-block">
-            {index > 0 ? <hr className="stage-divider" /> : null}
-            <article className="method-stage-row">
-              <div className="method-stage-number" aria-hidden="true">
-                {index + 1}
+          <article key={stage.id} className="stage-row">
+            <div className="stage-number" aria-hidden="true">
+              {index + 1}
+            </div>
+            <div>
+              <div className="stage-title">
+                <span>{stage.title}</span>
+                {stage.status ? (
+                  <span className={`stage-badge ${stage.status}`}>
+                    {stageStatusLabels[stage.status]}
+                  </span>
+                ) : null}
               </div>
-              <div className="method-stage-body">
-                <div className="method-stage-header">
-                  <h2 className="section-title">{stage.title}</h2>
-                  {stage.status ? (
-                    <span className={`method-status-badge status-${stage.status}`}>
-                      {stageStatusLabels[stage.status]}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="section-copy">{stage.body}</p>
-              </div>
-            </article>
-          </div>
+              <p className="stage-body">{stage.body}</p>
+            </div>
+          </article>
         ))}
       </section>
 
       {showGlossary ? (
-        <article className="method-section">
-          <h2 className="section-title">Glossary</h2>
+        <section className="glossary-section method-section">
+          <h2 className="section-label">Glossary</h2>
           <dl className="method-glossary-grid">
             {method.metricGlossary!.map((item) => (
-              <div key={item.label} className="method-glossary-item">
-                <dt>{item.label}</dt>
-                <dd>{item.body}</dd>
+              <div key={item.label} className="glossary-entry">
+                <dt className="glossary-term">{item.label}</dt>
+                <dd className="glossary-def">{item.body}</dd>
               </div>
             ))}
           </dl>
-        </article>
+        </section>
       ) : null}
 
-      {additionalCaveats.length > 0 ? (
-        <article className="method-section">
-          <h2 className="section-title">Additional caveats</h2>
-          <ul className="method-list">
-            {additionalCaveats.map((caveat) => (
-              <li key={caveat}>{caveat}</li>
-            ))}
-          </ul>
-        </article>
-      ) : null}
-
-      <article className="method-section">
-        <h2 className="section-title">Provenance</h2>
-        <dl className="method-provenance-grid">
+      <section className="method-section">
+        <h2 className="section-label">Provenance</h2>
+        <dl className="provenance-grid">
           {provenanceEntries.map(([label, value]) => (
-            <div key={label} className="method-provenance-card">
-              <dt>{label}</dt>
-              <dd>{value}</dd>
+            <div key={label} className="prov-card">
+              <dt className="prov-label">{label}</dt>
+              <dd className="prov-value">{value}</dd>
             </div>
           ))}
         </dl>
-      </article>
+      </section>
 
       {showFellowshipScope ? (
-        <article className="method-card method-scope-card method-section">
-          <h2 className="section-title">Full fellowship research scope</h2>
-          <ol className="method-scope-list">
-            {method.fellowshipScope!.map((item) => (
-              <li key={item.title} className="method-scope-item">
-                <p className="section-copy">
+        <article className="fellowship-box method-section">
+          <div className="fellowship-header">Full fellowship research scope</div>
+          <div className="fellowship-list">
+            {method.fellowshipScope!.map((item, index) => (
+              <div key={item.title} className="fellowship-item">
+                <div className="fellowship-num">{index + 1}.</div>
+                <div className="fellowship-text">
                   <strong>{item.title}.</strong> {item.body}
-                </p>
-              </li>
+                </div>
+              </div>
             ))}
-          </ol>
+          </div>
         </article>
       ) : null}
     </div>

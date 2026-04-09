@@ -271,6 +271,9 @@ export const mockMatrix: MatrixFile = {
 }
 
 export const mockMethod: MethodFile = {
+  intro:
+    'Technical report for how this build was generated and what we can currently interpret biologically. Gene names in the perturbation strip (NCBP2, MED10, etc.) are human genes targeted by CRISPRi knockdown. See the Glossary section below for all terms.',
+  experimentalContextLabel: 'Experimental context',
   metricGlossary: [
     {
       label: 'CRISPRi knockdown',
@@ -324,27 +327,27 @@ export const mockMethod: MethodFile = {
   fellowshipScope: [
     {
       title: 'Tahoe-100M scale-up',
-      body: 'This K562 mock mirrors a feasibility baseline; fellowship scope scales the same pipeline to Tahoe-100M where sparse features are trained under broader perturbation diversity and stronger treatment-response structure.',
+      body: 'The K562 demo validates extraction feasibility. The fellowship trains SAEs on Tahoe-100M drug perturbation data, enabling the MPAS/Trametinib mechanistic analysis.',
     },
     {
-      title: 'Layer sweep',
-      body: 'Fellowship execution compares matched SAE runs across multiple internal layers and selects depth using shared quality gates rather than a single default layer assumption.',
+      title: 'Systematic layer sweep',
+      body: 'Train SAEs at layers 2, 4, and 6, compare biological coherence via Embedding Recovery Score, and identify which layer encodes the most perturbation-specific computation.',
     },
     {
-      title: 'Richer shortcut probes',
-      body: 'Shortcut auditing expands beyond library size to stronger metadata probes so technical confounders are explicitly measured and filtered before interpretation.',
+      title: 'Richer shortcut detection',
+      body: 'Apply Tahoe-100M metadata including sequencing batch IDs, Parse prep IDs, and guide-assignment confidence as shortcut probe covariates beyond library size.',
     },
     {
       title: 'Causal steering on Trametinib/C32',
-      body: 'Causal steering remains future work: intervene on feature clusters during inference and test for coherent, measurable transcriptomic shifts in Trametinib-response settings.',
+      body: 'Clamp MPAS-suppression feature clusters during STATE inference on untreated C32 melanoma cells and test whether predicted transcriptomes shift toward the Trametinib response phenotype.',
     },
     {
-      title: 'STACK extension',
-      body: 'The same interpretability scaffolding is intended to extend beyond STATE to related architectures such as STACK and preserve the same reporting contract.',
+      title: 'STACK dual-axis extension',
+      body: 'Apply SAEs to STACK\'s dual-axis tabular attention, separately extracting features from intra-cellular (gene-gene) and inter-cellular (population context) attention layers.',
     },
     {
       title: 'Integrated Gradients / circuit tracing',
-      body: 'Feature-level interpretation is expanded with attribution and circuit tracing so mechanism claims are tied to directional contribution paths, not only feature rankings.',
+      body: 'Run Integrated Gradients through the SAE dictionary to identify which feature clusters drive specific predictions and test pairwise subadditivity of hub features.',
     },
   ],
   stages: [
@@ -375,8 +378,6 @@ export const mockMethod: MethodFile = {
   ],
   honestyCaveats: [
     'This visualizer surfaces sparse features extracted from Arc Institute\'s STATE State Transition module. Activations are set-conditioned: each cell\'s representation was computed alongside the other cells in its 64-cell covariate-matched inference window, so features may encode relational signals rather than purely cell-autonomous biology. Gene bars show Spearman expression-correlation associations, not projected decoder weights. The shortcut probe is library size - a proxy; richer guide- and batch-aware audits are the full fellowship pipeline\'s Stage 2 contribution.',
-    'This mock payload is for local UI development; it is not itself a biological result.',
-    'Causal steering is not executed in mock mode.',
   ],
   datasetProvenance: {
     datasetLabel: 'Replogle K562 Essential Perturb-seq (CRISPRi)',

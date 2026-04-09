@@ -134,7 +134,7 @@ export function FeatureDetail({ feature }: FeatureDetailProps) {
         <div className="chip-row">
           {feature.canonicalOverlap.length === 0 ? (
             <p className="section-copy canonical-empty-note">
-              No overlap with MYC-target or BCR-ABL-effector reference sets in this feature&apos;s top associated genes.
+              No overlap with MYC-target or BCR-ABL effector gene sets detected.
             </p>
           ) : (
             feature.canonicalOverlap.map((entry) => (

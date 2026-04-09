@@ -20,10 +20,10 @@ const requiredGlossaryLabels = [
 
 const requiredScopeTitles = [
   'Tahoe-100M scale-up',
-  'Layer sweep',
-  'Richer shortcut probes',
+  'Systematic layer sweep',
+  'Richer shortcut detection',
   'Causal steering on Trametinib/C32',
-  'STACK extension',
+  'STACK dual-axis extension',
   'Integrated Gradients / circuit tracing',
 ]
 
@@ -64,6 +64,16 @@ const raw = await readFile(methodPath, 'utf8')
 const parsed = JSON.parse(raw)
 const methodSchema = await loadMethodSchemaFromAppSource()
 methodSchema.parse(parsed)
+
+assertCanonical(
+  parsed.intro ===
+    'Technical report for how this build was generated and what we can currently interpret biologically. Gene names in the perturbation strip (NCBP2, MED10, etc.) are human genes targeted by CRISPRi knockdown. See the Glossary section below for all terms.',
+  'content/method.json must include the canonical Method intro line.',
+)
+assertCanonical(
+  parsed.experimentalContextLabel === 'Experimental context',
+  'content/method.json must use Experimental context as the section label.',
+)
 
 assertCanonical(
   Array.isArray(parsed.metricGlossary) && parsed.metricGlossary.length >= requiredGlossaryLabels.length,
@@ -109,28 +119,32 @@ assertCanonical(
   'Canonical Method provenance must use hook site transformer_backbone.layers.4.',
 )
 assertCanonical(
-  parsed.datasetProvenance?.hiddenWidth === '328',
-  'Canonical Method provenance must say hidden width 328.',
+  parsed.datasetProvenance?.hiddenWidth === '328 dimensions',
+  'Canonical Method provenance must say hidden width 328 dimensions.',
 )
 assertCanonical(
-  parsed.datasetProvenance?.inferenceWindow === '64 cells',
-  'Canonical Method provenance must say 64-cell inference window.',
+  parsed.datasetProvenance?.inferenceWindow === '64 cells per forward pass',
+  'Canonical Method provenance must say 64 cells per forward pass.',
 )
 assertCanonical(
-  parsed.datasetProvenance?.exportedCells === '5,120',
-  'Canonical Method provenance must say 5,120 exported cells.',
+  parsed.datasetProvenance?.exportedCells === '5,120 (20 perturbations × up to 256 cells)',
+  'Canonical Method provenance must say 5,120 (20 perturbations × up to 256 cells).',
 )
 assertCanonical(
   parsed.datasetProvenance?.deadFeatureFraction === '22.5%',
   'Canonical Method provenance must say dead-feature fraction 22.5%.',
 )
 assertCanonical(
-  parsed.datasetProvenance?.geneAssociations === 'Spearman expression correlation',
-  'Canonical Method provenance must say Spearman expression correlation.',
+  parsed.datasetProvenance?.shortcutProbe === 'Library size (UMI proxy)',
+  'Canonical Method provenance must say Library size (UMI proxy).',
 )
 assertCanonical(
-  parsed.datasetProvenance?.pathwayDatabases === 'MSigDB Hallmark, KEGG Medicus',
-  'Canonical Method provenance must say MSigDB Hallmark, KEGG Medicus.',
+  parsed.datasetProvenance?.geneAssociations === 'Spearman expression correlation via var_dims.pkl gene ordering',
+  'Canonical Method provenance must say Spearman expression correlation via var_dims.pkl gene ordering.',
+)
+assertCanonical(
+  parsed.datasetProvenance?.pathwayDatabases === 'MSigDB Hallmark + KEGG Medicus (hypergeometric, Benjamini-Hochberg)',
+  'Canonical Method provenance must say MSigDB Hallmark + KEGG Medicus (hypergeometric, Benjamini-Hochberg).',
 )
 
 console.log(`Validated ${methodPath}`)

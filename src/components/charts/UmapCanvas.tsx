@@ -174,7 +174,7 @@ export function UmapCanvas({
               return sequentialScale(value, min, max)
             }
             const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)))
-            const floored = 0.16 + normalized * 0.84
+            const floored = 0.25 + normalized * 0.75
             const adjusted = min + floored * (max - min)
             return sequentialScale(adjusted, min, max)
           })()
@@ -361,7 +361,6 @@ export function UmapCanvas({
       <div className="chart-card-header">
         <div>
           <h2 className="section-title">Cell embedding</h2>
-          <p className="section-copy">Set-conditioned UMAP view.</p>
         </div>
       </div>
       <div ref={containerRef} className="chart-stage umap-stage">
@@ -416,12 +415,12 @@ export function UmapCanvas({
               </div>
             ) : hoveredValue !== null ? (
               <div className="chart-tooltip-copy">
-                Activation: {hoveredValue.toFixed(2)}
+                Activation: {Math.round(hoveredValue)}
               </div>
             ) : null}
             {hoveredValue !== null && rawMaxValue !== null ? (
               <div className="chart-tooltip-copy">
-                Raw: {hoveredValue.toFixed(2)} / {rawMaxValue.toFixed(2)} max
+                Raw: {Math.round(hoveredValue)} / {Math.round(rawMaxValue)} max
               </div>
             ) : null}
           </div>

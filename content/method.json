@@ -1,4 +1,6 @@
 {
+  "intro": "Technical report for how this build was generated and what we can currently interpret biologically. Gene names in the perturbation strip (NCBP2, MED10, etc.) are human genes targeted by CRISPRi knockdown. See the Glossary section below for all terms.",
+  "experimentalContextLabel": "Experimental context",
   "stages": [
     {
       "id": "stage-1",
@@ -26,10 +28,7 @@
     }
   ],
   "honestyCaveats": [
-    "This visualizer surfaces sparse features extracted from Arc Institute's STATE State Transition module. Activations are set-conditioned: each cell's representation was computed alongside the other cells in its 64-cell covariate-matched inference window, so features may encode relational signals rather than purely cell-autonomous biology. Gene bars show Spearman expression-correlation associations, not projected decoder weights. The shortcut probe is library size - a proxy; richer guide- and batch-aware audits are the full fellowship pipeline's Stage 2 contribution.",
-    "This prototype runs on Replogle K562 Essential CRISPRi data, not Tahoe-100M melanoma drug perturbations.",
-    "The fellowship's MPAS/Trametinib grounding requires Tahoe-100M melanoma drug-perturbation data and is not claimed here.",
-    "Causal steering is not executed in this prototype."
+    "This visualizer surfaces sparse features extracted from Arc Institute's STATE State Transition module. Activations are set-conditioned: each cell's representation was computed alongside the other cells in its 64-cell covariate-matched inference window, so features may encode relational signals rather than purely cell-autonomous biology. Gene bars show Spearman expression-correlation associations, not projected decoder weights. The shortcut probe is library size - a proxy; richer guide- and batch-aware audits are the full fellowship pipeline's Stage 2 contribution."
   ],
   "metricGlossary": [
     {
@@ -85,15 +84,15 @@
     "datasetLabel": "Replogle K562 Essential Perturb-seq (CRISPRi)",
     "datasetDoi": "10.1016/j.cell.2022.05.013",
     "modelRunLabel": "ST-HVG-Replogle/fewshot/k562",
-    "checkpoint": "arcinstitute/ST-HVG-Replogle/fewshot/k562",
+    "checkpoint": "ST-HVG-Replogle/fewshot/k562",
     "hookSite": "transformer_backbone.layers.4",
-    "hiddenWidth": "328",
-    "inferenceWindow": "64 cells",
-    "exportedCells": "5,120",
+    "hiddenWidth": "328 dimensions",
+    "inferenceWindow": "64 cells per forward pass",
+    "exportedCells": "5,120 (20 perturbations × up to 256 cells)",
     "deadFeatureFraction": "22.5%",
-    "shortcutProbe": "Library size (total UMI count)",
-    "geneAssociations": "Spearman expression correlation",
-    "pathwayDatabases": "MSigDB Hallmark, KEGG Medicus",
+    "shortcutProbe": "Library size (UMI proxy)",
+    "geneAssociations": "Spearman expression correlation via var_dims.pkl gene ordering",
+    "pathwayDatabases": "MSigDB Hallmark + KEGG Medicus (hypergeometric, Benjamini-Hochberg)",
     "saeConfig": {
       "layer": 4,
       "architecture": "TopK",
@@ -101,32 +100,32 @@
       "k": 32,
       "epochs": 30
     },
-    "shortcutProbeDescription": "Library size (total UMI count)"
+    "shortcutProbeDescription": "Library size (UMI proxy)"
   },
   "fellowshipScope": [
     {
       "title": "Tahoe-100M scale-up",
-      "body": "This K562 build is a feasibility anchor, not the destination dataset. The fellowship scope scales this exact extraction-and-interpretation workflow onto Tahoe-100M so sparse features are learned from far broader perturbation coverage, richer metadata, and stronger treatment-response gradients. The explicit goal is to move from a compact proof that the pipeline works into a robust setting where mechanism-level conclusions can be stress-tested across many perturbation contexts rather than inferred from one benchmark cell line."
+      "body": "The K562 CRISPRi demo validates the extraction, SAE training, and visualization pipeline on a tractable public benchmark. The fellowship's primary scientific target is Arc Institute's Tahoe-100M dataset - 100M+ single cells across drug perturbations including Trametinib, Vemurafenib, and combination treatments on C32 melanoma and other cancer lines. Training SAEs on STATE residual-stream activations from Tahoe-100M enables the MPAS/Trametinib mechanistic story: identifying which sparse features encode the MAPK pathway suppression signature and whether those features are causally upstream of the predicted transcriptomic response."
     },
     {
-      "title": "Layer sweep",
-      "body": "The current demo hooks layer 4, but that is a practical starting point rather than a settled mechanistic claim. Fellowship execution runs matched SAE training at multiple depths (for example layers 2, 4, and 6) and compares feature quality using shared quantitative gates plus manual biological review. The deliverable is a defensible layer-selection rationale: which depth yields the best balance of sparse interpretability, perturbation specificity, and resistance to technical shortcuts."
+      "title": "Systematic layer sweep",
+      "body": "Layer 4 was chosen heuristically for this prototype. The fellowship will train SAEs at layers 2, 4, and 6 of STATE's bidirectional State Transition backbone, computing Embedding Recovery Score (a measure of how well SAE reconstructions preserve downstream model behavior) at each depth. Early layers are expected to encode technical covariates and batch effects; middle layers perturbation-specific computation; late layers output-space gene-program structure. The sweep will identify the optimal extraction site and whether a multi-layer SAE ensemble outperforms any single layer."
     },
     {
-      "title": "Richer shortcut probes",
-      "body": "Library size is a useful fallback in this prototype, but it is intentionally weak as a full shortcut audit. The fellowship extends Stage 2 with stronger technical probes available at Tahoe scale, including sequencing batch metadata, preparation-specific effects, and perturbation-assignment confidence, so features can be triaged against real confounders instead of a proxy alone. This turns shortcut scoring from a lightweight warning signal into a central reliability gate for downstream interpretation."
+      "title": "Richer shortcut detection",
+      "body": "Library size is a weak proxy for the technical confounders that matter most in large-scale Perturb-seq. Tahoe-100M includes Parse Biosciences prep IDs, sequencing batch identifiers, guide-assignment confidence scores, and cell viability indicators. The fellowship will implement an adversarial shortcut audit: for each SAE feature, fit a linear probe on each technical covariate and flag features where any covariate exceeds the validated R² threshold. Features that survive all probes are classified as biologically grounded. This replaces the single library-size proxy with a multi-covariate rejection protocol."
     },
     {
       "title": "Causal steering on Trametinib/C32",
-      "body": "Causal steering is the key non-MVP objective: intervene on candidate feature clusters during inference and test whether predicted transcriptomic outputs move in expected directions. In fellowship scope, this is framed around Trametinib response in C32-like contexts, where interventions are measured against held-out response structure rather than judged qualitatively. The success criterion is not merely visually plausible movement in embedding space, but directional shifts that are consistent, measurable, and biologically coherent under controlled intervention settings."
+      "body": "The core causal experiment: identify SAE features associated with MPAS pathway suppression in Trametinib-treated C32 melanoma cells, then clamp those feature activations to their Trametinib-treatment values during STATE inference on untreated C32 cells. If the predicted transcriptome shifts toward the Trametinib response phenotype - specifically if MPAS signature genes are upregulated and proliferation markers are suppressed - this constitutes evidence that the identified features are causally upstream of the drug response rather than merely correlated with it. If a paired untreated/treated C32 line is unavailable in Tahoe-100M, the experiment will use within-dataset controls by clamping acquired-resistance features in wild-type baseline cells."
     },
     {
-      "title": "STACK extension",
-      "body": "STATE is the primary prototype surface, but the same interpretability scaffolding is designed to transfer to closely related architectures such as STACK. Fellowship scope includes testing whether sparse-feature decomposition can separately characterize intra-cellular and inter-cellular computation axes in tabular-attention settings. This broadens the output from a single-model demonstration to an architecture-aware interpretability toolkit with reusable reporting contracts."
+      "title": "STACK dual-axis extension",
+      "body": "STATE's successor architecture STACK uses tabular attention with two distinct axes: intra-cellular attention over gene-gene regulatory relationships within a cell, and inter-cellular attention over population context across cells in the inference window. These two axes are mechanistically distinct - intra-cellular attention encodes gene regulatory logic while inter-cellular attention encodes population-level signals like perturbation co-occurrence and cell-state diversity. The fellowship will apply separate SAEs to each attention axis, testing whether the resulting feature dictionaries partition cleanly along this biological boundary and whether features from the inter-cellular axis capture the set-conditioning effects that standard single-cell methods miss entirely."
     },
     {
       "title": "Integrated Gradients / circuit tracing",
-      "body": "Feature-level summaries are useful, but they do not by themselves explain causal contribution paths. Fellowship work adds attribution and circuit-style tracing (including Integrated Gradients style analyses) through the learned feature basis to identify which feature groups drive specific outputs and where interactions are additive or non-additive. The objective is a tighter bridge from sparse discovery to mechanistic explanation, especially around hub features that appear repeatedly across perturbation programs."
+      "body": "Attribution methods will identify which SAE feature clusters are causally responsible for specific STATE predictions rather than merely correlated with them. Integrated Gradients will be computed through the SAE decoder back to the input gene-expression space, identifying which input genes most strongly activate each feature. Circuit tracing will follow feature activations across layers, identifying hub features that gate large downstream effects. Pairwise subadditivity analysis - clamping pairs of features and measuring whether the joint effect exceeds the sum of individual effects - will reveal feature interactions encoding gene-regulatory co-dependencies. This connects the sparse feature representation back to mechanistic hypotheses about transcription factor networks."
     }
   ]
 }

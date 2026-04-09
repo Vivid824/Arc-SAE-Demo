@@ -115,6 +115,8 @@ export const MethodFellowshipScopeItemSchema = z.object({
 })
 
 export const MethodFileSchema = z.object({
+  intro: z.string().optional(),
+  experimentalContextLabel: z.string().optional(),
   stages: z.array(MethodStageSchema),
   honestyCaveats: z.array(z.string()),
   metricGlossary: z.array(MethodMetricGlossaryItemSchema).optional(),
