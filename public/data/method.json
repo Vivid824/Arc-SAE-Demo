@@ -1,0 +1,132 @@
+{
+  "stages": [
+    {
+      "id": "stage-1",
+      "title": "Checkpoint load and sparse feature extraction",
+      "status": "current",
+      "body": "We load Arc Institute's public `ST-HVG-Replogle/fewshot/k562` checkpoint, which was trained on the Replogle 2022 K562 Essential CRISPRi Perturb-seq dataset. We register a forward hook on transformer layer 4 of the bidirectional State Transition backbone (hidden width 328) and extract one residual-stream activation vector per cell across 20 perturbation conditions (19 gene knockouts plus non-targeting controls), yielding 5,120 exported cells. Layer 4 was chosen as a middle-depth layer where perturbation-specific computation is expected to be concentrated, following precedent from layer-wise probing studies in language model SAE work - early layers encode technical covariates, late layers encode output structure. A systematic layer sweep across layers 2, 4, and 6 is a planned Stage 1 contribution of the fellowship. We train a per-sample TopK sparse autoencoder (expansion 2x, k=32, 30 epochs, Adam lr=1e-4) on these activations and export the top 50 interpretable sparse features by attribution. SAE quality: 22.5% dead-feature fraction, well within the accepted threshold."
+    },
+    {
+      "id": "stage-2",
+      "title": "Shortcut audit and bias probing",
+      "status": "current",
+      "body": "For each of the 50 exported features, we compute Pearson R\u00b2 between that feature's activation vector across cells and the cells' library size (total UMI count). Library size is used as a proxy for technical confounders because the K562 Essential AnnData does not expose guide-level QC metadata. Features with R\u00b2 >= 0.55 are flagged as likely shortcut artifacts; features with R\u00b2 between 0.35 and 0.55 are marked for review. In this dataset, 0 of the top 50 features exceeded the shortcut threshold, consistent with the relatively homogeneous library-size distribution in the K562 Essential screen. The full fellowship pipeline will apply richer probes including sequencing batch IDs, Parse Biosciences prep IDs, and guide-assignment confidence from Tahoe-100M."
+    },
+    {
+      "id": "stage-3",
+      "title": "Biological grounding against canonical K562 programs",
+      "status": "current",
+      "body": "We compute vectorized Spearman rank correlations between each feature's activation vector and each of the 2,000 HVG expression vectors across all 5,120 cells, using the checkpoint-native gene ordering from `var_dims.pkl`. Top positive and negative associated genes are reported for each feature. We then check for overlap with two canonical K562 gene sets: MYC targets (CCND1, E2F1, CDK4, CDK6, MCM2, MCM5, PCNA, RRM1, RRM2, BRCA1, CCNA2, AURKB, BUB1, MKI67) and BCR-ABL effectors (STAT5A, STAT5B, CRK, CRKL, PTPN11, PIK3R1, AKT1, BCL2, MCL1, CCND1, MYC, HSP90AA1). We additionally run hypergeometric pathway enrichment against MSigDB Hallmark and KEGG Medicus gene sets. 22 of the top 50 features have at least one canonical overlap gene. The fellowship's MPAS/Trametinib grounding requires Tahoe-100M melanoma drug-perturbation data and is not claimed here."
+    },
+    {
+      "id": "stage-4",
+      "title": "Causal steering via activation patching",
+      "status": "future",
+      "body": "Causal steering - clamping identified feature clusters during STATE inference and measuring whether the predicted transcriptome shifts causally - is not executed in this prototype. The Stage 4 experiment requires implementing a custom forward pass with mid-inference activation patching, and validating against held-out perturbation responses in Tahoe-100M. This is the primary novel contribution planned for the fellowship research phase."
+    }
+  ],
+  "honestyCaveats": [
+    "This visualizer surfaces sparse features extracted from Arc Institute's STATE State Transition module. Activations are set-conditioned: each cell's representation was computed alongside the other cells in its 64-cell covariate-matched inference window, so features may encode relational signals rather than purely cell-autonomous biology. Gene bars show Spearman expression-correlation associations, not projected decoder weights. The shortcut probe is library size - a proxy; richer guide- and batch-aware audits are the full fellowship pipeline's Stage 2 contribution.",
+    "This prototype runs on Replogle K562 Essential CRISPRi data, not Tahoe-100M melanoma drug perturbations.",
+    "The fellowship's MPAS/Trametinib grounding requires Tahoe-100M melanoma drug-perturbation data and is not claimed here.",
+    "Causal steering is not executed in this prototype."
+  ],
+  "metricGlossary": [
+    {
+      "label": "CRISPRi knockdown",
+      "body": "CRISPR interference represses a target gene's expression without cutting DNA. In this build, each perturbation pill corresponds to one gene targeted by CRISPRi."
+    },
+    {
+      "label": "non-targeting",
+      "body": "Control cells carrying a guide designed not to repress a human gene. These provide the baseline condition for comparing perturbation effects."
+    },
+    {
+      "label": "SAE feature",
+      "body": "A latent dimension in the sparse autoencoder dictionary. Each feature summarizes a recurring activation pattern in STATE's residual stream."
+    },
+    {
+      "label": "Attribution",
+      "body": "Mean activation of a feature across all exported cells. Higher means the feature fires more on average."
+    },
+    {
+      "label": "L0",
+      "body": "Percentage of exported cells where this feature has any positive activation. A feature with L0 = 99% fires on nearly every cell; a feature with L0 = 5% fires only on a small subset."
+    },
+    {
+      "label": "Dense feature",
+      "body": "A feature with very high L0, meaning it fires in most cells. Dense features can still be biologically meaningful, but they are less sparse and should be interpreted with more caution."
+    },
+    {
+      "label": "Shortcut R\u00b2",
+      "body": "How much of this feature's variance is explained by library size. Near 0 means the feature is not obviously confounded by sequencing depth."
+    },
+    {
+      "label": "Set-conditioned",
+      "body": "Each cell embedding is computed in the context of the other cells in its 64-cell inference window. Features may therefore encode relational context, not just cell-autonomous state."
+    },
+    {
+      "label": "Canonical overlap",
+      "body": "Case-normalized overlap between top associated genes for a feature and curated K562 signatures (MYC targets or BCR-ABL effectors)."
+    },
+    {
+      "label": "UMAP",
+      "body": "A two-dimensional projection of the exported cell embeddings. Nearby points represent cells with more similar internal STATE activations in the selected representation."
+    },
+    {
+      "label": "HVG",
+      "body": "Highly variable genes. The association step operates on the 2,000 HVGs aligned to the checkpoint-native `var_dims.pkl` gene ordering."
+    },
+    {
+      "label": "Residual stream",
+      "body": "The hidden representation inside the transformer backbone that accumulates information across layers. This build hooks layer 4 residual-stream activations for feature extraction."
+    }
+  ],
+  "datasetProvenance": {
+    "datasetLabel": "Replogle K562 Essential Perturb-seq (CRISPRi)",
+    "datasetDoi": "10.1016/j.cell.2022.05.013",
+    "modelRunLabel": "ST-HVG-Replogle/fewshot/k562",
+    "checkpoint": "arcinstitute/ST-HVG-Replogle/fewshot/k562",
+    "hookSite": "transformer_backbone.layers.4",
+    "hiddenWidth": "328",
+    "inferenceWindow": "64 cells",
+    "exportedCells": "5,120",
+    "deadFeatureFraction": "22.5%",
+    "shortcutProbe": "Library size (total UMI count)",
+    "geneAssociations": "Spearman expression correlation",
+    "pathwayDatabases": "MSigDB Hallmark, KEGG Medicus",
+    "saeConfig": {
+      "layer": 4,
+      "architecture": "TopK",
+      "expansionFactor": 2,
+      "k": 32,
+      "epochs": 30
+    },
+    "shortcutProbeDescription": "Library size (total UMI count)"
+  },
+  "fellowshipScope": [
+    {
+      "title": "Tahoe-100M scale-up",
+      "body": "The K562 demo validates extraction feasibility. The fellowship trains SAEs on Tahoe-100M drug perturbation data, enabling the MPAS/Trametinib mechanistic analysis."
+    },
+    {
+      "title": "Layer sweep",
+      "body": "Train SAEs at layers 2, 4, and 6, compare biological coherence via Embedding Recovery Score, and identify which layer encodes the most perturbation-specific computation."
+    },
+    {
+      "title": "Richer shortcut probes",
+      "body": "Apply Tahoe-100M metadata including sequencing batch IDs, Parse prep IDs, and guide-assignment confidence as shortcut probe covariates beyond library size."
+    },
+    {
+      "title": "Causal steering on Trametinib/C32",
+      "body": "Clamp MPAS-suppression feature clusters during STATE inference on untreated C32 melanoma cells and test whether predicted transcriptomes shift toward the Trametinib response phenotype."
+    },
+    {
+      "title": "STACK extension",
+      "body": "Apply SAEs to STACK's dual-axis tabular attention, separately extracting features from intra-cellular (gene-gene) and inter-cellular (population context) attention layers."
+    },
+    {
+      "title": "Integrated Gradients / circuit tracing",
+      "body": "Run Integrated Gradients through the SAE dictionary to identify which feature clusters drive specific predictions and test pairwise subadditivity of hub features."
+    }
+  ]
+}

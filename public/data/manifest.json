@@ -1,0 +1,32 @@
+{
+  "datasetLabel": "Replogle K562 Essential Perturb-seq",
+  "datasetDoi": "10.1016/j.cell.2022.05.013",
+  "modelLabel": "ST-HVG-Replogle",
+  "modelRunLabel": "ST-HVG-Replogle/fewshot/k562",
+  "modelUrl": "https://huggingface.co/arcinstitute/models",
+  "saeConfig": {
+    "architecture": "topk",
+    "expansionFactor": 2,
+    "k": 32,
+    "layer": 4
+  },
+  "nLiveFeatures": 50,
+  "shortcutProbe": "library_size_proxy:row_sum",
+  "canonicalSignatures": [
+    "MYC targets",
+    "BCR-ABL effectors"
+  ],
+  "availableLayers": [
+    4
+  ],
+  "defaultLayer": 4,
+  "defaultFeatureId": "F0000",
+  "defaultPerturbation": "MED10",
+  "defaultTheme": "light",
+  "filePaths": {
+    "features": "data/features.json",
+    "embedding": "data/embedding.json",
+    "matrix": "data/matrix.json",
+    "method": "data/method.json"
+  }
+}
