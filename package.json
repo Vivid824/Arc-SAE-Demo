@@ -13,6 +13,8 @@
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/ibm-plex-sans": "^5.2.8",
+    "d3-force": "^3.0.0",
+    "d3-scale": "^4.0.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-window": "^2.2.7",
@@ -20,6 +22,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@types/d3-force": "^3.0.10",
+    "@types/d3-scale": "^4.0.9",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

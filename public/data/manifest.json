@@ -24,9 +24,9 @@
   "defaultPerturbation": "MED10",
   "defaultTheme": "light",
   "filePaths": {
-    "features": "data/features.json",
-    "embedding": "data/embedding.json",
-    "matrix": "data/matrix.json",
-    "method": "data/method.json"
+    "features": "/data/features.json",
+    "embedding": "/data/embedding.json",
+    "matrix": "/data/matrix.json",
+    "method": "/data/method.json"
   }
 }

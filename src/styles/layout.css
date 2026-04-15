@@ -714,6 +714,82 @@ body {
   display: block;
 }
 
+.chart-card-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+  align-items: start;
+}
+
+.chart-card-row-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex-shrink: 0;
+  padding-right: 8px;
+  border-right: 1px solid var(--border-default);
+}
+
+.chart-card-row-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  padding: 0 8px 0 6px;
+  border-left: 2px solid transparent;
+}
+
+.chart-card-row-label-selected {
+  color: var(--text-primary);
+  font-weight: var(--fw-medium);
+  border-left-color: #6B46C1;
+}
+
+.chart-card-row-label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart-card-canvas-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.chart-card-column-labels {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 14px;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+}
+
+.chart-card-column-label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  overflow: visible;
+}
+
+.chart-card-column-label-text {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-secondary);
+  transform: rotate(-45deg);
+  transform-origin: right bottom;
+  white-space: nowrap;
+}
+
+.chart-card-canvas-container {
+  position: relative;
+  padding-left: 14px;
+}
+
 .legend {
   display: flex;
   flex-direction: column;

@@ -19,17 +19,29 @@ type TopBarProps = {
 const viewLabels: Record<ViewTab, string> = {
   explorer: 'Explorer',
   heatmap: 'Heatmap',
+  attribution: 'Attribution',
+  interactions: 'Interactions',
   method: 'Method',
 }
 
 const viewDescriptions: Record<ViewTab, string> = {
   explorer: 'UMAP of cell embeddings colored by feature activation. Each point is one cell.',
   heatmap: 'Feature × perturbation activation matrix.',
+  attribution: 'Gradient attribution showing which features influence each perturbation.',
+  interactions: 'Network graph of feature co-activation patterns.',
   method: 'Pipeline transparency and technical notes.',
 }
 
-const mobileTabs: MobileTab[] = ['features', 'explorer', 'heatmap', 'method', 'detail']
-const desktopTabs: ViewTab[] = ['explorer', 'heatmap', 'method']
+const mobileTabs: MobileTab[] = [
+  'features',
+  'explorer',
+  'heatmap',
+  'attribution',
+  'interactions',
+  'method',
+  'detail',
+]
+const desktopTabs: ViewTab[] = ['explorer', 'heatmap', 'attribution', 'interactions', 'method']
 
 function isControlPerturbation(perturbation: string) {
   return perturbation === 'non-targeting'

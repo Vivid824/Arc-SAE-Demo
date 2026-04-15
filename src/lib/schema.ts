@@ -26,6 +26,7 @@ export const ManifestSchema = z.object({
     embedding: z.string(),
     matrix: z.string(),
     method: z.string(),
+    attribution: z.string().optional(),
   }),
 })
 
@@ -50,6 +51,13 @@ export const TopPerturbationSchema = z.object({
   meanActivation: z.number(),
 })
 
+export const ShortcutProbeSchema = z.object({
+  probeName: z.string(),
+  r2: z.number(),
+  threshold: z.number(),
+  status: z.enum(['pass', 'warning', 'fail']),
+})
+
 export const FeatureSchema = z.object({
   id: z.string(),
   rank: z.number().int().positive(),
@@ -70,6 +78,8 @@ export const FeatureSchema = z.object({
   canonicalOverlap: z.array(CanonicalOverlapSchema),
   topPerturbations: z.array(TopPerturbationSchema),
   perturbationMeanActivations: z.record(z.string(), z.number()),
+  shortcutProbes: z.array(ShortcutProbeSchema).optional(),
+  layerId: z.number().optional(),
 })
 
 export const FeaturesFileSchema = z.array(FeatureSchema)
@@ -156,6 +166,41 @@ export const MethodFileSchema = z.object({
   }),
 })
 
+export const GradientAttributionSchema = z.object({
+  featureId: z.string(),
+  perturbationId: z.string(),
+  attributionScore: z.number(),
+  topGenes: z
+    .array(
+      z.object({
+        gene: z.string(),
+        gradientWeight: z.number(),
+      }),
+    )
+    .max(10),
+})
+
+export const FeatureInteractionSchema = z.object({
+  sourceFeatureId: z.string(),
+  targetFeatureId: z.string(),
+  correlation: z.number(),
+  coactivationRate: z.number(),
+})
+
+export const LayerMetadataSchema = z.object({
+  layer: z.number(),
+  reconstructionLoss: z.number(),
+  deadFeatureFraction: z.number(),
+  avgL0: z.number(),
+  biologicalCoherenceScore: z.number().optional(),
+})
+
+export const AttributionFileSchema = z.object({
+  attributions: z.array(GradientAttributionSchema),
+  interactions: z.array(FeatureInteractionSchema),
+  layerMetadata: z.array(LayerMetadataSchema).optional(),
+})
+
 export type ThemeName = z.infer<typeof ThemeNameSchema>
 export type Manifest = z.infer<typeof ManifestSchema>
 export type FeatureRecord = z.infer<typeof FeatureSchema>
@@ -164,6 +209,11 @@ export type EmbeddingCell = z.infer<typeof EmbeddingCellSchema>
 export type EmbeddingFile = z.infer<typeof EmbeddingFileSchema>
 export type MatrixFile = z.infer<typeof MatrixFileSchema>
 export type MethodFile = z.infer<typeof MethodFileSchema>
+export type GradientAttribution = z.infer<typeof GradientAttributionSchema>
+export type FeatureInteraction = z.infer<typeof FeatureInteractionSchema>
+export type LayerMetadata = z.infer<typeof LayerMetadataSchema>
+export type AttributionFile = z.infer<typeof AttributionFileSchema>
+export type ShortcutProbe = z.infer<typeof ShortcutProbeSchema>
 
 export type LoadedDataset = {
   manifest: Manifest
@@ -171,6 +221,7 @@ export type LoadedDataset = {
   embedding: EmbeddingFile
   matrix: MatrixFile
   method: MethodFile
+  attribution?: AttributionFile
   warnings?: string[]
   source: 'public' | 'mock'
   fallbackReason?: string

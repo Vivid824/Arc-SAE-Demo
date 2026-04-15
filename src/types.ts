@@ -1,4 +1,11 @@
-export type ViewTab = 'explorer' | 'heatmap' | 'method'
+export type ViewTab = 'explorer' | 'heatmap' | 'attribution' | 'interactions' | 'method'
 
-export type MobileTab = 'features' | 'explorer' | 'heatmap' | 'method' | 'detail'
+export type MobileTab =
+  | 'features'
+  | 'explorer'
+  | 'heatmap'
+  | 'attribution'
+  | 'interactions'
+  | 'method'
+  | 'detail'
 

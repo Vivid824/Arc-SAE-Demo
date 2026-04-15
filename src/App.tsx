@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { ErrorState } from './components/ErrorState'
 import { DataLoadError, describeDataLoadError, loadAppData } from './lib/loadData'
+import { computeExtendedShortcuts } from './lib/attributionMath'
 import { filterFeatures, sortFeatures } from './lib/sort'
 import type { LoadedDataset, ThemeName } from './lib/schema'
 import { applyTheme, readStoredTheme, resolveTheme, writeStoredTheme } from './lib/theme'
@@ -31,7 +32,21 @@ function App() {
 
     loadAppData(controller.signal)
       .then((loaded) => {
-        setDataset(loaded)
+        // Check if aborted before updating state
+        if (controller.signal.aborted) {
+          return
+        }
+
+        // Compute extended shortcut probes for all features
+        const featuresWithProbes = loaded.features.map((feature) => ({
+          ...feature,
+          shortcutProbes: computeExtendedShortcuts(feature, loaded.embedding),
+        }))
+
+        setDataset({
+          ...loaded,
+          features: featuresWithProbes,
+        })
 
         const storedTheme = readStoredTheme()
         if (!storedTheme) {
@@ -47,6 +62,10 @@ function App() {
         setSelectionInitialized(true)
       })
       .catch((nextError) => {
+        // Ignore abort errors (from React StrictMode double-mount in dev)
+        if (nextError.name === 'AbortError' || controller.signal.aborted) {
+          return
+        }
         setError(nextError instanceof Error ? nextError : new Error(String(nextError)))
       })
 

@@ -1,4 +1,5 @@
 import {
+  AttributionFileSchema,
   EmbeddingFileSchema,
   FeaturesFileSchema,
   ManifestSchema,
@@ -6,6 +7,7 @@ import {
   MethodFileSchema,
   type LoadedDataset,
 } from './schema'
+import { computeFeatureInteractions, computePseudoGradients } from './attributionMath'
 
 export type DataLoadErrorKind = 'network' | 'http' | 'parse' | 'schema'
 
@@ -116,14 +118,18 @@ export async function loadDatasetFiles(
 ) {
   const { filePaths } = dataset.manifest
 
-  const [features, embedding, matrix, method] = await Promise.all([
+  const [features, embedding, matrix, method, attribution] = await Promise.all([
     fetchJson(filePaths.features, FeaturesFileSchema, signal),
     fetchJson(filePaths.embedding, EmbeddingFileSchema, signal),
     fetchJson(filePaths.matrix, MatrixFileSchema, signal),
     fetchJson(filePaths.method, MethodFileSchema, signal),
+    // Attribution file is optional - gracefully handle missing file
+    filePaths.attribution
+      ? fetchJson(filePaths.attribution, AttributionFileSchema, signal).catch(() => null)
+      : Promise.resolve(null),
   ])
 
-  return { features, embedding, matrix, method }
+  return { features, embedding, matrix, method, attribution }
 }
 
 export async function loadAppData(signal?: AbortSignal): Promise<LoadedDataset> {
@@ -214,9 +220,21 @@ export async function loadAppData(signal?: AbortSignal): Promise<LoadedDataset> 
     }
   }
 
+  // If attribution data is missing, compute it client-side
+  let attributionData = dataset.attribution
+  if (!attributionData) {
+    console.log('[data-load] Attribution data not found, computing client-side...')
+    attributionData = {
+      attributions: computePseudoGradients(dataset.features, dataset.embedding),
+      interactions: computeFeatureInteractions(dataset.features, dataset.embedding),
+      layerMetadata: [],
+    }
+  }
+
   return {
     manifest,
     ...dataset,
+    attribution: attributionData,
     warnings,
     source: 'public',
   }

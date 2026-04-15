@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { AttributionView } from './AttributionView'
 import { ExplorerView } from './ExplorerView'
 import { FeatureDetail } from './FeatureDetail'
 import { FeatureList } from './FeatureList'
 import { HeatmapView } from './HeatmapView'
+import { InteractionView } from './InteractionView'
 import { MethodView } from './MethodView'
 import { TopBar } from './TopBar'
 import type { LoadedDataset } from '../lib/schema'
@@ -79,6 +81,25 @@ export function AppShell({
       )
     }
 
+    if (tab === 'attribution') {
+      return (
+        <AttributionView
+          dataset={dataset}
+          selectedPerturbationId={selectedPerturbationId}
+        />
+      )
+    }
+
+    if (tab === 'interactions') {
+      return (
+        <InteractionView
+          dataset={dataset}
+          selectedFeatureId={selectedFeatureId}
+          onSelectFeature={onSelectFeature}
+        />
+      )
+    }
+
     if (tab === 'method') {
       return (
         <MethodView
@@ -108,6 +129,10 @@ export function AppShell({
         return <FeatureDetail feature={selectedFeature} />
       case 'heatmap':
         return renderCenter('heatmap')
+      case 'attribution':
+        return renderCenter('attribution')
+      case 'interactions':
+        return renderCenter('interactions')
       case 'method':
         return renderCenter('method')
       default:

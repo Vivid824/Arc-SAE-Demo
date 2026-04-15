@@ -82,10 +82,67 @@ export function FeatureDetail({ feature }: FeatureDetailProps) {
             <dd>{feature.activeCells}</dd>
           </div>
         )}
-        <div>
-          <dt>Shortcut R²</dt>
-          <dd>{feature.shortcutR2.toFixed(3)}</dd>
-        </div>
+      </div>
+
+      <div className="detail-section">
+        <h3 className="section-title">Shortcut Detection</h3>
+        <p className="section-copy">
+          Technical bias probes testing whether feature captures biological signal or
+          artifacts.
+        </p>
+        {feature.shortcutProbes && feature.shortcutProbes.length > 0 ? (
+          <table className="shortcut-probe-table" style={{ width: '100%', fontSize: '13px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-color, #e5e7eb)' }}>
+                <th style={{ textAlign: 'left', padding: '8px 4px' }}>Probe</th>
+                <th style={{ textAlign: 'right', padding: '8px 4px' }}>R²</th>
+                <th style={{ textAlign: 'center', padding: '8px 4px' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {feature.shortcutProbes.map((probe) => (
+                <tr key={probe.probeName}>
+                  <td style={{ padding: '8px 4px' }}>{probe.probeName}</td>
+                  <td style={{ textAlign: 'right', padding: '8px 4px', fontVariantNumeric: 'tabular-nums' }}>
+                    {probe.r2.toFixed(3)}
+                  </td>
+                  <td style={{ textAlign: 'center', padding: '8px 4px' }}>
+                    <span
+                      className={`badge badge-${probe.status}`}
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        background:
+                          probe.status === 'pass'
+                            ? '#d1fae5'
+                            : probe.status === 'warning'
+                              ? '#fef3c7'
+                              : '#fee2e2',
+                        color:
+                          probe.status === 'pass'
+                            ? '#065f46'
+                            : probe.status === 'warning'
+                              ? '#92400e'
+                              : '#991b1b',
+                      }}
+                    >
+                      {probe.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="detail-grid">
+            <div>
+              <dt>Shortcut R²</dt>
+              <dd>{feature.shortcutR2.toFixed(3)}</dd>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="detail-section">
